@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: searchengine
+  
+  # 数据源配置
+  datasource:
+    url: jdbc:h2:mem:searchengine
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  # H2 Console (开发环境)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# Gitee API配置
+gitee:
+  # Gitee API基础地址
+  api-base-url: https://gitee.com/api/v5
+  # Gitee访问令牌（可选，用于提高API调用限制）
+  # 如果不需要，可以留空或删除此行
+  access-token: 0a8d6cd35a802f360f10112151a7fa62
+  # 每页获取的数据量（默认100，最大100）
+  per-page: 100
+  # 请求超时时间（毫秒）
+  timeout: 10000
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.searchengine: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
