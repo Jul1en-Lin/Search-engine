@@ -51,7 +51,7 @@ class VectorSearchServer:
 
         return embedding.astype('float32')
 
-    def search(self, query, top_k=2000):
+    def search(self, query, top_k=1000):
         """
         搜索相似文档
         :param query: 查询文本

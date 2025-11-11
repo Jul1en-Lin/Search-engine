@@ -111,7 +111,7 @@ class VectorIndexBuilder:
 
 def main():
     # 配置参数
-    model_path = r"D:\ModelScope\text2vec-base-chinese"
+    model_path = r"D:/ModelScope/text2vec-base-chinese"
     db_config = {
         'host': 'localhost',
         'user': 'root',
@@ -119,7 +119,7 @@ def main():
         'database': 'search_engine',
         'charset': 'utf8mb4'
     }
-    index_save_path = r"D:\vector_index"
+    index_save_path = r"D:/vector_index"
 
     # 创建索引构建器并执行
     builder = VectorIndexBuilder(model_path, db_config, index_save_path)
