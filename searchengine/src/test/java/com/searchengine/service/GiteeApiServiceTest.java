@@ -1,5 +1,6 @@
 package com.searchengine.service;
 
+import com.searchengine.SearchEngineApplication;
 import com.searchengine.dto.GiteeRepositoryDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ import java.util.List;
  * 用于测试Gitee API服务的功能
  */
 @Slf4j
-@SpringBootTest
+@SpringBootTest(classes = SearchEngineApplication.class)
 class GiteeApiServiceTest {
     
     @Autowired

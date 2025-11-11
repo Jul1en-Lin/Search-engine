@@ -19,9 +19,7 @@ spring:
 
 # 服务器配置
 server:
-  port: 8080
-  servlet:
-    context-path: /api
+  port: 80
 
 # Gitee API配置
 gitee:

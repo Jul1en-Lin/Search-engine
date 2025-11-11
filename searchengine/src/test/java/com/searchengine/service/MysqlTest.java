@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(classes = SearchEngineApplication.class)
 public class MysqlTest {
+
     @Autowired
     private RepositoryMapper repositoryMapper;
 

@@ -102,46 +102,16 @@ public class IndexService {
      * @return 搜索结果列表
      */
     public List<Repository> search(String query) {
-        try {
-            // 1. 获取倒排索引搜索结果
-            List<Long> indexResults = invertedIndex.search(query);
-            List<Long> indexIds = indexResults.stream()
-                    .limit(2000)
-                    .collect(Collectors.toList());
+        // 搜索文档ID
+        List<Long> docIds = invertedIndex.search(query);
 
-            // 2. 调用Python服务获取语义搜索结果
-            String pythonServiceUrl = PYTHON_SERVICE_URL + "?q=" + query;
-            SearchResult[] semanticResults = restTemplate.getForObject(pythonServiceUrl, SearchResult[].class);
-            List<Long> semanticsIds = Arrays.stream(semanticResults)
-                    .map(SearchResult::getId)
-                    .collect(Collectors.toList());
+        // 只要前1000个仓库
+        docIds = docIds.stream().limit(1000).collect(Collectors.toList());
 
-            // 3. 求交集
-            Set<Long> indexIdSet = new HashSet<>(indexIds);
-            List<Long> resultIds = semanticsIds.stream()
-                    .filter(indexIdSet::contains)
-                    .collect(Collectors.toList());
-
-            // 交集为空，直接返回
-            if (resultIds.isEmpty()) {
-                return Collections.emptyList();
-            }
-            // 4. 按顺序查询仓库信息
-            List<Repository> repositoryEntityList = repositoryMapper.selectByIdsInOrder(resultIds);
-
-            // 5. 对readme字段进行截取
-            List<Repository> result = new ArrayList<>();
-            for (Repository repository :repositoryEntityList) {
-                if (repository.getReadme().length() > 100) {
-                    repository.setReadme(repository.getReadme().substring(0, 100));
-                }
-                result.add(repository);
-            }
-            return result;
-
-        } catch (Exception e) {
-            // log.error("搜索失败", e);
-            return Collections.emptyList();
-        }
+        // 获取仓库信息
+        return docIds.stream()
+                .map(repositoryMapper::selectById)
+                .filter(repo -> repo != null)
+                .toList();
     }
 }

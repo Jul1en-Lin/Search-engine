@@ -92,11 +92,11 @@ public class InvertedIndex {
                 .map(segToken -> segToken.word)
                 .collect(Collectors.toSet());
 
-        // 对terms进行一个停用词过滤
-        terms.removeAll(stopWords);
-        if (terms.isEmpty()) {
-            return Collections.emptyList();
-        }
+//        // 对terms进行一个停用词过滤
+//        terms.removeAll(stopWords);
+//        if (terms.isEmpty()) {
+//            return Collections.emptyList();
+//        }
 
         // 获取每个词对应的文档列表
         Map<Long, Integer> docScores = new HashMap<>();

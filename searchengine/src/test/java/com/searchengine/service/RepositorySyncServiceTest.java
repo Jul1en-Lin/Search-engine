@@ -28,6 +28,6 @@ public class RepositorySyncServiceTest {
 
     @Test
     public void syncUserRepositories() {
-        repositorySyncService.syncUserRepositories("Cary_C");
+        repositorySyncService.syncUserRepositories("xiaojianzi");
     }
 }
