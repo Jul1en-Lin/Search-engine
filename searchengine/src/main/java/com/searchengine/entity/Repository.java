@@ -1,7 +1,9 @@
 package com.searchengine.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+
 /**
  * 仓库实体类
  */
@@ -17,20 +19,24 @@ public class Repository {
     /**
      * 仓库完整名称
      */
+    @TableField("fullName")
     private String fullName;
 
     /**
      * 仓库HTML访问地址
      */
+    @TableField("htmlUrl")
     private String htmlUrl;
 
     /**
      * 仓库README内容
      */
+    @TableField("readme")
     private String readme;
 
     /**
      * Gitee仓库ID
      */
+    @TableField("repositoryId")
     private Long repositoryId;
 }

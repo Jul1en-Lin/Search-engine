@@ -2,9 +2,11 @@ package com.searchengine.service.impl;
 
 import com.searchengine.dto.GiteeRepositoryDTO;
 import com.searchengine.entity.Repository;
+import com.searchengine.index.InvertedIndex;
 import com.searchengine.mapper.RepositoryMapper;
 import com.searchengine.service.GiteeApiService;
 import com.searchengine.service.RepositorySyncService;
+import com.searchengine.utils.JiebaTokenizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ public class RepositorySyncServiceImpl implements RepositorySyncService {
 
     private final GiteeApiService giteeApiService;
     private final RepositoryMapper repositoryMapper;
+    private final JiebaTokenizer jiebaTokenizer;
+    private final InvertedIndex invertedIndex;
 
     /**
      * 同步用户/组织的仓库数据
@@ -173,4 +177,6 @@ public class RepositorySyncServiceImpl implements RepositorySyncService {
             throw new RuntimeException("批量保存仓库数据失败：" + e.getMessage(), e);
         }
     }
+
+
 }

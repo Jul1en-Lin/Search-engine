@@ -13,7 +13,7 @@ spring:
   # MyBatis-Plus配置
   mybatis-plus:
     configuration:
-      map-underscore-to-camel-case: false
+      map-underscore-to-camel-case: true
       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 
@@ -34,6 +34,11 @@ gitee:
   per-page: 100
   # 请求超时时间（毫秒）
   timeout: 10000
+
+# 搜索引擎配置
+searchengine:
+  index:
+    path: ./data/index
 
 # 日志配置
 logging:
