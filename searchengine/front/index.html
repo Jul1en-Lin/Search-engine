@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码仓库搜索引擎</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #F4EFEA;
+            color: #383838;
+            line-height: 1.6;
+        }
+        .highlight {
+            background-color: #FF7169;
+            color: #383838;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #16AA98;
+        }
+        .page-btn:hover {
+            background-color: #16AA98;
+            color: white;
+        }
+        .page-btn.active {
+            background-color: #16AA98;
+            color: white;
+        }
+        .repo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(56, 56, 56, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="bg-[#F4EFEA] border-b border-[#383838]/10 px-10 py-5 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <i data-lucide="search" class="w-8 h-8 text-[#FF7169]"></i>
+            <span class="text-xl font-semibold text-[#383838] tracking-tight">代码仓库搜索</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-10 py-12">
+        <!-- Search Section -->
+        <div class="mb-12">
+            <div class="relative max-w-2xl mx-auto">
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    placeholder="搜索代码仓库..." 
+                    class="w-full px-6 py-4 pr-14 text-lg border-2 border-[#383838]/20 rounded-lg bg-white text-[#383838] placeholder-[#383838]/40 search-input transition-all duration-200"
+                />
+                <button 
+                    id="searchBtn"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-[#16AA98] text-white rounded-lg hover:bg-[#16AA98]/90 transition-colors"
+                >
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Info -->
+        <div id="resultsInfo" class="mb-6 text-[#383838]/60 text-sm hidden">
+            <span id="totalCount">0</span> 个结果
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#16AA98]"></div>
+            <p class="mt-4 text-[#383838]/60">搜索中...</p>
+        </div>
+
+        <!-- Results Container -->
+        <div id="resultsContainer" class="space-y-4 mb-8"></div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="flex justify-center items-center gap-2 mt-12 hidden"></div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <i data-lucide="search-x" class="w-16 h-16 mx-auto mb-4 text-[#383838]/30"></i>
+            <p class="text-[#383838]/60 text-lg">暂无搜索结果</p>
+            <p class="text-[#383838]/40 text-sm mt-2">尝试使用不同的关键词搜索</p>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        const API_BASE = 'http://localhost/search';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let allResults = [];
+        let searchQuery = '';
+
+        // Search function
+        async function performSearch(query) {
+            if (!query.trim()) return;
+            
+            searchQuery = query.trim();
+            currentPage = 1;
+            
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('pagination').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('resultsInfo').classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}?query=${encodeURIComponent(query)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`搜索失败: ${response.status} ${response.statusText} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                allResults = Array.isArray(data) ? data : [];
+                
+                document.getElementById('loading').classList.add('hidden');
+                
+                if (allResults.length === 0) {
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    return;
+                }
+
+                // Show results info
+                document.getElementById('totalCount').textContent = allResults.length;
+                document.getElementById('resultsInfo').classList.remove('hidden');
+                
+                displayResults();
+                displayPagination();
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                
+                // Show error message to user
+                const emptyState = document.getElementById('emptyState');
+                emptyState.innerHTML = `
+                    <i data-lucide="alert-circle" class="w-16 h-16 mx-auto mb-4 text-[#FF7169]"></i>
+                    <p class="text-[#FF7169] text-lg font-semibold">搜索出错</p>
+                    <p class="text-[#383838]/60 text-sm mt-2">${error.message}</p>
+                    <p class="text-[#383838]/40 text-xs mt-4">请检查后端服务是否正常运行</p>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        // Tokenization for Chinese and English
+        function tokenize(text) {
+            if (!text) return [];
+            
+            const words = [];
+            // Extract Chinese characters (each character or consecutive characters)
+            const chineseRegex = /[\u4e00-\u9fa5]+/g;
+            // Extract English words
+            const englishRegex = /[a-zA-Z]+/g;
+            
+            let match;
+            // Extract Chinese words
+            while ((match = chineseRegex.exec(text)) !== null) {
+                const chineseWord = match[0];
+                // Add the whole word
+                words.push(chineseWord);
+                // Also add individual characters for better matching
+                if (chineseWord.length > 1) {
+                    for (let i = 0; i < chineseWord.length; i++) {
+                        words.push(chineseWord[i]);
+                    }
+                }
+            }
+            
+            // Extract English words
+            while ((match = englishRegex.exec(text)) !== null) {
+                const word = match[0].toLowerCase();
+                if (word.length > 1) {
+                    words.push(word);
+                }
+            }
+            
+            // Remove duplicates
+            return [...new Set(words)];
+        }
+
+        // Highlight keywords in text
+        function highlightText(text, query) {
+            if (!text || !query) return text;
+            
+            const tokens = tokenize(query);
+            if (tokens.length === 0) return text;
+            
+            // First, escape HTML to prevent XSS
+            let escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
+            // Sort tokens by length (longer first) to prioritize longer matches
+            const sortedTokens = tokens.filter(t => t.length > 0).sort((a, b) => b.length - a.length);
+            
+            // Find all match positions first (on escaped text)
+            const allMatches = [];
+            sortedTokens.forEach(token => {
+                if (token.length > 0) {
+                    const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(escapedToken, 'gi');
+                    let match;
+                    
+                    while ((match = regex.exec(escaped)) !== null) {
+                        allMatches.push({
+                            start: match.index,
+                            end: match.index + match[0].length,
+                            text: match[0]
+                        });
+                    }
+                }
+            });
+            
+            // Remove overlapping matches (keep longer ones)
+            const nonOverlapping = [];
+            allMatches.sort((a, b) => {
+                if (a.start !== b.start) return a.start - b.start;
+                return b.end - a.end; // Longer first if same start
+            });
+            
+            allMatches.forEach(match => {
+                const overlaps = nonOverlapping.some(existing => 
+                    (match.start < existing.end && match.end > existing.start)
+                );
+                if (!overlaps) {
+                    nonOverlapping.push(match);
+                }
+            });
+            
+            // Sort by start position descending for replacement
+            nonOverlapping.sort((a, b) => b.start - a.start);
+            
+            // Replace from end to start
+            let highlighted = escaped;
+            nonOverlapping.forEach(match => {
+                const before = highlighted.substring(0, match.start);
+                const matchText = highlighted.substring(match.start, match.end);
+                const after = highlighted.substring(match.end);
+                highlighted = before + `<span class="highlight">${matchText}</span>` + after;
+            });
+            
+            return highlighted;
+        }
+
+        // Display results for current page
+        function displayResults() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageResults = allResults.slice(start, end);
+            
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            pageResults.forEach(repo => {
+                const card = document.createElement('div');
+                card.className = 'bg-white border border-[#383838]/10 rounded-lg p-6 repo-card transition-all duration-200';
+                
+                const highlightedReadme = highlightText(repo.readme || '', searchQuery);
+                const highlightedFullName = highlightText(repo.fullName || '', searchQuery);
+                
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-3">
+                        <h3 class="text-lg font-semibold text-[#383838]">
+                            <a href="${repo.htmlUrl}" target="_blank" class="hover:text-[#16AA98] transition-colors">
+                                ${highlightedFullName}
+                            </a>
+                        </h3>
+                        <a href="${repo.htmlUrl}" target="_blank" class="text-[#16AA98] hover:text-[#FF7169] transition-colors">
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                    <div class="text-[#383838]/70 text-sm leading-relaxed">
+                        ${highlightedReadme || '<span class="text-[#383838]/40">暂无描述</span>'}
+                    </div>
+                    <div class="mt-4 flex items-center gap-4 text-xs text-[#383838]/50">
+                        <span class="flex items-center gap-1">
+                            <i data-lucide="link" class="w-3 h-3"></i>
+                            <a href="${repo.htmlUrl}" target="_blank" class="hover:text-[#16AA98] transition-colors truncate max-w-xs">
+                                ${repo.htmlUrl}
+                            </a>
+                        </span>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            // Re-initialize icons for new elements
+            lucide.createIcons();
+        }
+
+        // Display pagination
+        function displayPagination() {
+            const totalPages = Math.ceil(allResults.length / itemsPerPage);
+            if (totalPages <= 1) {
+                document.getElementById('pagination').classList.add('hidden');
+                return;
+            }
+            
+            const pagination = document.getElementById('pagination');
+            pagination.classList.remove('hidden');
+            pagination.innerHTML = '';
+            
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `px-4 py-2 border border-[#383838]/20 rounded-lg page-btn transition-colors ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`;
+            prevBtn.innerHTML = '<i data-lucide="chevron-left" class="w-4 h-4"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayResults();
+                    displayPagination();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            pagination.appendChild(prevBtn);
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `px-4 py-2 border border-[#383838]/20 rounded-lg page-btn transition-colors ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    displayResults();
+                    displayPagination();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                pagination.appendChild(pageBtn);
+            }
+            
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `px-4 py-2 border border-[#383838]/20 rounded-lg page-btn transition-colors ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`;
+            nextBtn.innerHTML = '<i data-lucide="chevron-right" class="w-4 h-4"></i>';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayResults();
+                    displayPagination();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+            pagination.appendChild(nextBtn);
+            
+            lucide.createIcons();
+        }
+
+        // Event listeners
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const query = document.getElementById('searchInput').value;
+            performSearch(query);
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = document.getElementById('searchInput').value;
+                performSearch(query);
+            }
+        });
+
+        // Check for query parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('q');
+        if (queryParam) {
+            document.getElementById('searchInput').value = queryParam;
+            performSearch(queryParam);
+        }
+    </script>
+</body>
+</html>
+

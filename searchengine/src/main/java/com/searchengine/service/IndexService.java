@@ -106,28 +106,53 @@ public class IndexService {
      */
     public List<Repository> search(String query) {
         try {
+            log.info("开始搜索，关键词: {}", query);
+            
             // 1. 获取倒排索引搜索结果
             List<Long> indexResults = invertedIndex.search(query);
             List<Long> indexIds = indexResults.stream()
                     .limit(2000)
                     .collect(Collectors.toList());
+            
+            log.info("倒排索引搜索到 {} 个结果", indexIds.size());
 
-            // 2. 调用Python服务获取语义搜索结果
-            String pythonServiceUrl = PYTHON_SERVICE_URL + "?q=" + query;
-            SearchResult[] semanticResults = restTemplate.getForObject(pythonServiceUrl, SearchResult[].class);
-            List<Long> semanticsIds = Arrays.stream(semanticResults)
-                    .map(SearchResult::getId)
-                    .collect(Collectors.toList());
+            List<Long> resultIds;
 
-            // 3. 求交集
-            Set<Long> indexIdSet = new HashSet<>(indexIds);
-            List<Long> resultIds = semanticsIds.stream()
-                    .filter(indexIdSet::contains)
-                    .collect(Collectors.toList());
+            // 2. 尝试调用Python服务获取语义搜索结果
+            try {
+                String pythonServiceUrl = PYTHON_SERVICE_URL + "?q=" + java.net.URLEncoder.encode(query, "UTF-8");
+                log.debug("调用Python语义搜索服务: {}", pythonServiceUrl);
+                
+                SearchResult[] semanticResults = restTemplate.getForObject(pythonServiceUrl, SearchResult[].class);
+                
+                if (semanticResults == null || semanticResults.length == 0) {
+                    log.warn("Python服务返回空结果，使用倒排索引结果");
+                    resultIds = indexIds;
+                } else {
+                    List<Long> semanticsIds = Arrays.stream(semanticResults)
+                            .map(SearchResult::getId)
+                            .collect(Collectors.toList());
+                    
+                    log.info("语义搜索返回 {} 个结果", semanticsIds.size());
+
+                    // 3. 求交集（倒排索引结果与语义搜索结果的交集）
+                    Set<Long> indexIdSet = new HashSet<>(indexIds);
+                    resultIds = semanticsIds.stream()
+                            .filter(indexIdSet::contains)
+                            .collect(Collectors.toList());
+
+                    log.info("交集结果: {} 个", resultIds.size());
+                }
+
+            } catch (Exception e) {
+                log.warn("Python语义搜索服务不可用，将使用倒排索引搜索结果: {}", e.getMessage());
+                // Python服务不可用时，降级使用倒排索引结果
+                resultIds = indexIds;
+            }
 
             // 交集为空，直接返回
-            // 避免空集合报错
             if (resultIds.isEmpty()) {
+                log.info("搜索完成，无匹配结果");
                 return Collections.emptyList();
             }
 
@@ -136,12 +161,14 @@ public class IndexService {
 
             // 5. 对readme字段进行截取
             List<Repository> result = new ArrayList<>();
-            for (Repository repository :repositoryEntityList) {
-                if (repository.getReadme().length() > 100) {
+            for (Repository repository : repositoryEntityList) {
+                if (repository.getReadme() != null && repository.getReadme().length() > 100) {
                     repository.setReadme(repository.getReadme().substring(0, 100));
                 }
                 result.add(repository);
             }
+
+            log.info("搜索完成，返回 {} 个结果", result.size());
             return result;
 
         } catch (Exception e) {
