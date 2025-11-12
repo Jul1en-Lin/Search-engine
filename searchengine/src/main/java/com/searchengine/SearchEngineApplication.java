@@ -26,7 +26,9 @@ public class SearchEngineApplication implements CommandLineRunner {
         log.info("正在加载索引...");
         indexService.loadIndex();
         log.info("索引加载完成");
-
+        log.info("正在加载停用词");
+        indexService.loadStopWords("D:\\Project\\Search_engine\\stopwords.txt");
+        log.info("停用词加载完成");
     }
 }
 

@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 public class IndexPersistence {
-    private static final String INDEX_FILE = "D:\\inverted_index.dat";
+    private static final String INDEX_FILE = "D:\\Project\\Search_engine\\inverted_index.dat";
 
     /**
      * 保存索引到文件
