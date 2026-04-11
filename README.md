@@ -28,24 +28,24 @@
 
 ## 技术栈
 
-### 后端技术
-![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.0-6DB33F?logo=springboot&logoColor=white)
-![Maven](https://img.shields.io/badge/Maven-4.0.0-C71A36?logo=apachemaven&logoColor=white)
-![Jieba](https://img.shields.io/badge/分词-Jieba-4FC08D?logo=java&logoColor=white)
+### 后端
+<img src="https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" />
+<img src="https://img.shields.io/badge/Spring%20Boot-3.3.0-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" />
+<img src="https://img.shields.io/badge/Maven-4.0.0-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white" />
+<img src="https://img.shields.io/badge/Jieba-分词-42B883?style=for-the-badge&logo=java&logoColor=white" />
 
-### 前端技术
-![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=nodedotjs&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)
+### 前端
+<img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+<img src="https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
 
-### AI / 向量检索
-![Python](https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?logo=pytorch&logoColor=white)
-![FAISS](https://img.shields.io/badge/FAISS-Vector%20Index-0096D6?logo=meta&logoColor=white)
-![text2vec](https://img.shields.io/badge/Model-text2vec--base--chinese-FF6B6B?logo=huggingface&logoColor=white)
+### AI / 语义检索
+<img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+<img src="https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" />
+<img src="https://img.shields.io/badge/FAISS-向量检索-0096D6?style=for-the-badge&logo=meta&logoColor=white" />
+<img src="https://img.shields.io/badge/text2vec-base--chinese-FF6B6B?style=for-the-badge&logo=huggingface&logoColor=white" />
 
 ### 数据存储
-![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
+<img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white" />
 
 ## 快速开始
 
